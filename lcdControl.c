@@ -61,3 +61,7 @@ void togglePlayIcon(int paused) {
 	}
 	Lcd_Draw_BMP(73, 185, play);
 }
+
+void showVolume(int vol) {
+	Lcd_Printf(248, 24, WHITE, BLACK, 1, 1, "%d", vol);
+}

@@ -12,8 +12,9 @@ extern volatile int Key_value;
 
 extern void drawPlayUI(int, int);
 extern void togglePlayIcon(int);
+extern void showVolume(int);
 
-void playAudio(void);
+void playAudio(int);
 
 unsigned int address, block;
 unsigned int offset, size, frame;
@@ -112,16 +113,18 @@ void readyAudio(void)
 		Sound_IIS_Start();
 
 		drawPlayUI(i, vol);
-		playAudio();
+		playAudio(vol);
 	}
 }
 
 
 
-void playAudio(void) {
+void playAudio(int vol) {
 	int finish = 0;
 	int paused = 0;
 	int lock = 0;
+
+	Sound_Control_Soft_Mute(0);
 
 	for(;;)
 	{
@@ -136,6 +139,22 @@ void playAudio(void) {
 			}
 			togglePlayIcon(paused);
 			Key_value = 0;
+			lock = 1;
+		}
+
+		if (!lock && (Key_value == 1 || Key_value == 3)) {
+			if (Key_value == 1 && vol < 9){
+				vol++;
+				showVolume(vol);
+				Sound_Control_Headphone_Volume(vol);
+			}
+			if (Key_value == 3 && vol) {
+				vol--;
+				showVolume(vol);
+				Sound_Control_Headphone_Volume(vol);
+			}
+			Key_value = 0;
+			lock = 1;
 		}
 
 		if (lock && !Key_value) lock = 0;
