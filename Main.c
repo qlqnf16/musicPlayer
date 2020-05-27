@@ -8,7 +8,10 @@ void Main(void)
 {
 	MMU_Init();
 	Led_Init();
-	Key_Poll_Init();
+	Key_Push_ISR_Init();
+	Key_ISR_Init();
+	Key_Push_ISR_Enable(1);
+	Key_ISR_Enable(1);
 	Nand_Init();
 	Sound_Init();
 	Uart_Init(115200);

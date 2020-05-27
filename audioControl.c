@@ -8,7 +8,10 @@
 #define NUM_OF_SONG 2
 
 extern volatile int DMA_complete[];
+extern volatile int Key_value;
+
 extern void drawPlayUI(int, int);
+extern void togglePlayIcon(int);
 
 void playAudio(void);
 
@@ -40,6 +43,9 @@ void Read_WAV_From_Nand(void)
 	Nand_Read(address, (U8 *)p[frame], Play_transfer_size * (sound.Play_bit_per_sample/8));
 	address = address + Play_transfer_size * (sound.Play_bit_per_sample/8);
 	dcon.st.TC = Play_transfer_size;
+
+
+
 	Uart_Printf("NAND: %d, 0x%.8X, %d\n", frame, p[frame], dcon.st.TC);
 }
 
@@ -114,9 +120,26 @@ void readyAudio(void)
 
 void playAudio(void) {
 	int finish = 0;
+	int paused = 0;
+	int lock = 0;
 
 	for(;;)
 	{
+		if(!lock && Key_value == 8) {
+			if (paused) {
+				Sound_Play_Pause(0);
+				paused = 0;
+			}
+			else {
+				Sound_Play_Pause(1);
+				paused = 1;
+			}
+			togglePlayIcon(paused);
+			Key_value = 0;
+		}
+
+		if (lock && !Key_value) lock = 0;
+
 		if(DMA_complete[2] && !finish)
 		{
 			DMA_complete[2] = 0;
