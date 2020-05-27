@@ -21,11 +21,11 @@ void Main(void)
 	Uart_Printf("Good Bye~\n");
 }
 
-extern void readyAudio(void);
+extern void chooseSongToPlay(void);
 extern void showMusicList(void);
 
 void User_Main(void) {
 	showMusicList();
-	readyAudio();
+	chooseSongToPlay();
 
 }

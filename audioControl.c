@@ -14,12 +14,19 @@ extern void drawPlayUI(int, int);
 extern void togglePlayIcon(int);
 extern void showVolume(int);
 
-void playAudio(int);
+void readyAudio(int);
+int playAudio(int);
+void changeVolume(int);
+int pauseAndPlayAudio(int);
+int changeSong(int, int);
 
 unsigned int address, block;
 unsigned int offset, size, frame;
 unsigned int Play_transfer_size;
 unsigned char * p[2];
+
+int vol = 5;
+int lock = 0;
 
 UNI_SRCC srcc;
 UNI_DSTC dstc;
@@ -50,27 +57,30 @@ void Read_WAV_From_Nand(void)
 	Uart_Printf("NAND: %d, 0x%.8X, %d\n", frame, p[frame], dcon.st.TC);
 }
 
-void readyAudio(void)
-{
-	int i, vol = 5;
+void chooseSongToPlay(void) {
+	int i = NUM_OF_SONG+1;
 
+	do
+	{
+		Uart_Printf("\n원하는 곡의 번호? [0]~[%d]", NUM_OF_SONG-1);
+		i = Uart_GetIntNum();
+		Uart_Printf("\rSONG=%d\n", i);
+	}while((unsigned int)i >= NUM_OF_SONG);
+
+	readyAudio(i);
+}
+
+void readyAudio(int i)
+{
 	p[0] = Get_Heap_Base();
 	p[1] = p[0] + 0x100000;
 
 	block = Nand_Page_2_Addr(100, 0, 0);
-	Sound_Control_Soft_Mute(0);
 
-	for(;;)
-	{
+	for (;;) {
+		Sound_Control_Soft_Mute(0);
 		frame = 0;
 		DMA_complete[2] = 1;
-
-		do
-		{
-			Uart_Printf("\n원하는 곡의 번호? [0]~[%d]", NUM_OF_SONG-1);
-			i = Uart_GetIntNum();
-			Uart_Printf("\rSONG=%d\n", i);
-		}while((unsigned int)i >= NUM_OF_SONG);
 
 		Nand_Read(block+i*8, (U8 *)&offset, 4);
 		Nand_Read(block+i*8+4, (U8 *)&size, 4);
@@ -113,48 +123,45 @@ void readyAudio(void)
 		Sound_IIS_Start();
 
 		drawPlayUI(i, vol);
-		playAudio(vol);
+		i = playAudio(i);
+		if (i == -1) break;
 	}
 }
 
 
 
-void playAudio(int vol) {
+int playAudio(int idx) {
 	int finish = 0;
 	int paused = 0;
-	int lock = 0;
 
+	Key_value = 0;
 	Sound_Control_Soft_Mute(0);
 
 	for(;;)
 	{
-		if(!lock && Key_value == 8) {
-			if (paused) {
-				Sound_Play_Pause(0);
-				paused = 0;
-			}
-			else {
-				Sound_Play_Pause(1);
-				paused = 1;
-			}
-			togglePlayIcon(paused);
-			Key_value = 0;
+		if(!lock && Key_value) {
 			lock = 1;
-		}
 
-		if (!lock && (Key_value == 1 || Key_value == 3)) {
-			if (Key_value == 1 && vol < 9){
-				vol++;
-				showVolume(vol);
-				Sound_Control_Headphone_Volume(vol);
+			// player control
+			switch (Key_value) {
+			case 1:
+				changeVolume(1);
+				break;
+			case 2:
+				return changeSong(idx, 0);
+			case 3:
+				changeVolume(0);
+				break;
+			case 4:
+				return changeSong(idx, 1);
+			case 8:
+				paused = pauseAndPlayAudio(paused);
+				break;
+			default:
+				break;
 			}
-			if (Key_value == 3 && vol) {
-				vol--;
-				showVolume(vol);
-				Sound_Control_Headphone_Volume(vol);
-			}
+
 			Key_value = 0;
-			lock = 1;
 		}
 
 		if (lock && !Key_value) lock = 0;
@@ -173,7 +180,33 @@ void playAudio(int vol) {
 		{
 			Uart_Printf("Stop\n");
 			Sound_Stop_Sound();
-			break;
+			return -1;
 		}
+	}
+
+	return -1;
+}
+
+int pauseAndPlayAudio(int paused) {
+	Sound_Play_Pause(!paused);
+	togglePlayIcon(paused);
+	return !paused;
+}
+
+void changeVolume(int up) {
+	if ((up && vol >= 9) || (!up && vol == 0)) return;
+	vol = up ? vol + 1 : vol - 1;
+	showVolume(vol);
+	Sound_Control_Headphone_Volume(vol);
+}
+
+int changeSong(int cur, int next) {
+	if (next) {
+		if (cur == NUM_OF_SONG-1) return -1;
+		return cur+1;
+	}
+	else {
+		if (cur == 0) return -1;
+		return cur-1;
 	}
 }
