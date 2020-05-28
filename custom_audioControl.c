@@ -157,7 +157,6 @@ int playAudio(int idx, int duration) {
 			Timer0_time_out = 0;
 			Timer0_Delay_ISR_Enable(1, 1000);
 
-			Uart_Printf("%d ", sec);
 			checkLyrics(idx, sec++);
 			if (paused || barStart >= 128) continue;
 			drawProgressBar((int)barStart, (int)(barStart+gap));
@@ -169,7 +168,7 @@ int playAudio(int idx, int duration) {
 
 			// player control
 			switch (Key_value) {
-			// 1 볼륨업 2 이전곡 3 볼륨다운 4 다음곡 8 일시정지/재생
+			// 1 볼륨업 2 이전곡 3 볼륨다운 4 다음곡 5 셔플 온/오프 6 반복재생 온/오프 7 목록으로 돌아가기 8 일시정지/재생
 			case 1:
 				changeVolume(1);
 				break;
@@ -188,6 +187,9 @@ int playAudio(int idx, int duration) {
 				repeatOn = !repeatOn;
 				toggleRepeatIcon(repeatOn);
 				break;
+			case 7:
+				Sound_Stop_Sound();
+				return -1;
 			case 8:
 				paused = pauseAndPlayAudio(paused);
 				break;
