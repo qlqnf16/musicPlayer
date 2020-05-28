@@ -14,6 +14,7 @@
 #include "./Images/albumart2.h"
 
 extern void initLyrics(int idx);
+void drawMusicCard(int, int, int);
 
 const char songTitles[][50] = { "What A Wonderful World", "We Will Rock You",  "Mountains", "Sweet but Psycho", "for him.", "Keep You Mine"};
 const char songArtists[][50] = { "Louis Armstrong", "Queen", "LSD", "Ava Max", "Troye Sivan", "NOTD"};
@@ -56,21 +57,22 @@ void showMusicList(void) {
 	int i;
 	Lcd_Clr_Screen(BLACK);
 	for (i = 0; i < 4; i++) {
-		drawMusicCard(i, !i);
+		drawMusicCard(i, i, !i);
 		Lcd_Draw_Hline(55 * (i + 1), 10, 310, WHITE);
 	}
 }
 
-void drawMusicCard(int i, int selected) {
-	Lcd_Printf(10, 10 + 55 * i, selected ? YELLOW : WHITE, BLACK, 1, 1, "%s", songTitles[i]);
-	Lcd_Printf(10, 30 + 55 * i, LGREY, BLACK, 1, 1, "%s", songArtists[i]);
+void drawMusicCard(int i, int idx, int selected) {
+	Lcd_Draw_Bar(10, 10 + 55 * i, 310, 50 + 55 * i, BLACK);
+	Lcd_Printf(10, 10 + 55 * i, selected ? YELLOW : WHITE, BLACK, 1, 1, "%s", songTitles[idx]);
+	Lcd_Printf(10, 30 + 55 * i, LGREY, BLACK, 1, 1, "%s", songArtists[idx]);
 }
 
 void moveMusicList(int idx, int prevIdx, int up) {
-	int i;
-	if (!((!up && prevIdx == listBottom) || (up && prevIdx != listTop))) {
-		drawMusicCard(prevIdx, 0);
-		drawMusicCard(idx, 1);
+	int i, j;
+	if (!((!up && prevIdx == listBottom) || (up && prevIdx == listTop))) {
+		drawMusicCard(prevIdx-listTop, prevIdx, 0);
+		drawMusicCard(idx-listTop, idx, 1);
 	}
 	else {
 		if (prevIdx == listBottom) {
@@ -80,8 +82,8 @@ void moveMusicList(int idx, int prevIdx, int up) {
 			listTop = idx;
 			listBottom = idx + 3;
 		}
-		for (i = listTop; i <= listBottom; i++) {
-			drawMusicCard(i, i == idx);
+		for (i = listTop, j = 0; i <= listBottom; i++, j++) {
+			drawMusicCard(j, i, i == idx);
 		}
 	}
 }
