@@ -10,17 +10,19 @@
 #include "./Images/repeatActive.h"
 #include "./Images/shuffle.h"
 #include "./Images/shuffleActive.h"
+#include "./Images/scrollUp.h"
+#include "./Images/scrollDown.h"
 #include "./Images/albumart1.h"
 #include "./Images/albumart2.h"
 
-extern void initLyrics(int idx);
-void drawMusicCard(int, int, int);
+extern void initLyrics(int);
+void drawMusicCard(int, int);
 
 const char songTitles[][50] = { "What A Wonderful World", "We Will Rock You",  "Mountains", "Sweet but Psycho", "for him.", "Keep You Mine"};
 const char songArtists[][50] = { "Louis Armstrong", "Queen", "LSD", "Ava Max", "Troye Sivan", "NOTD"};
 const unsigned short * albumArts[] = { albumart1, albumart2 };
 
-int listTop, listBottom = 3;
+int listTop, listBottom;
 
 void drawPlayerUI(int idx, int vol) {
 	Lcd_Set_Shape_Mode(0, 0xFFFe);
@@ -55,36 +57,36 @@ void drawSongUI(int idx) {
 
 void showMusicList(void) {
 	int i;
+	listTop = 0;
+	listBottom = 3;
+
 	Lcd_Clr_Screen(BLACK);
+	Lcd_Draw_BMP(298, 10, scrollUp);
+	Lcd_Draw_BMP(298, 218, scrollDown);
 	for (i = 0; i < 4; i++) {
-		drawMusicCard(i, i, !i);
-		Lcd_Draw_Hline(55 * (i + 1), 10, 310, WHITE);
+		drawMusicCard(i, i);
+		Lcd_Draw_Hline(55 * (i + 1), 10, 290, WHITE);
 	}
 }
 
-void drawMusicCard(int i, int idx, int selected) {
-	Lcd_Draw_Bar(10, 10 + 55 * i, 310, 50 + 55 * i, BLACK);
-	Lcd_Printf(10, 10 + 55 * i, selected ? YELLOW : WHITE, BLACK, 1, 1, "%s", songTitles[idx]);
+void drawMusicCard(int i, int idx) {
+	Lcd_Draw_Bar(10, 10 + 55 * i, 290, 50 + 55 * i, BLACK);
+	Lcd_Printf(10, 10 + 55 * i, WHITE, BLACK, 1, 1, "%s", songTitles[idx]);
 	Lcd_Printf(10, 30 + 55 * i, LGREY, BLACK, 1, 1, "%s", songArtists[idx]);
 }
 
-void moveMusicList(int idx, int prevIdx, int up) {
+void moveMusicList(int up) {
 	int i, j;
-	if (!((!up && prevIdx == listBottom) || (up && prevIdx == listTop))) {
-		drawMusicCard(prevIdx-listTop, prevIdx, 0);
-		drawMusicCard(idx-listTop, idx, 1);
+
+	if (up) {
+		listTop--;
+		listBottom--;
+	} else {
+		listTop++;
+		listBottom++;
 	}
-	else {
-		if (prevIdx == listBottom) {
-			listTop = idx - 3;
-			listBottom = idx;
-		} else {
-			listTop = idx;
-			listBottom = idx + 3;
-		}
-		for (i = listTop, j = 0; i <= listBottom; i++, j++) {
-			drawMusicCard(j, i, i == idx);
-		}
+	for (i = listTop, j = 0; i <= listBottom; i++, j++) {
+		drawMusicCard(j, i);
 	}
 }
 

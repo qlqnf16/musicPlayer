@@ -7,12 +7,12 @@
 #include <stdlib.h>
 
 extern void showMusicList(void);
-extern void moveMusicList(int, int, int);
+extern void moveMusicList(int);
 extern void readyAudio(int);
 void chooseSongToPlay(void);
 void User_Main(void);
 
-extern volatile int Key_value;
+extern volatile int Touch_x, Touch_y;
 
 void Main(void)
 {
@@ -21,6 +21,8 @@ void Main(void)
 	Key_ISR_Init();
 	Key_Push_ISR_Enable(1);
 	Key_ISR_Enable(1);
+	Touch_ISR_Enable(1);
+
 	Nand_Init();
 	Sound_Init();
 	Uart_Init(115200);
@@ -33,35 +35,45 @@ void Main(void)
 
 void User_Main(void) {
 	for (;;) {
-		Uart_Printf("back to main");
 		showMusicList();
 		chooseSongToPlay();
 	}
 }
 
 void chooseSongToPlay(void) {
-	int i = NUM_OF_SONG+1;
-	int selectedSongIdx = 0;
-	Key_value = 0;
+	int currentTop = 0;
+	int i, lock = 0;
+	Touch_x = Touch_y = 0;
 
 	for (;;) {
-		if (Key_value) {
-			if (Key_value == 1) {
-				if (selectedSongIdx == 0) continue;
-				moveMusicList(selectedSongIdx-1, selectedSongIdx, 1);
-				selectedSongIdx--;
-			}
-			if (Key_value == 3) {
-				if (selectedSongIdx == 5) continue;
-				moveMusicList(selectedSongIdx+1, selectedSongIdx, 0);
-				selectedSongIdx++;
-			}
-			if (Key_value == 8) {
-				if (selectedSongIdx >= NUM_OF_SONG) continue;
-				readyAudio(selectedSongIdx);
+		if (!lock && (Touch_x || Touch_y)) {
+			for (i = currentTop; i < currentTop+4; i++) {
+				if (i >= NUM_OF_SONG) continue;
+				if (Touch_x > 275 || (Touch_y > 55 * (i+1) || Touch_y < 55 * i)) continue;
+				Touch_x = Touch_y = 0;
+				readyAudio(i);
 				return;
 			}
-			Key_value = 0;
+
+			if (Touch_x >= 275 && Touch_y > 0 && Touch_y < 30) {
+				if (currentTop) {
+					moveMusicList(1);
+					currentTop--;
+				}
+			}
+			if (Touch_x >= 275 && Touch_y < 240 && Touch_y > 200) {
+				if (currentTop != 2) {
+					moveMusicList(0);
+					currentTop++;
+				}
+			}
+
+			Touch_x = Touch_y = 0;
+			lock = 1;
+		}
+
+		if (lock && (!Touch_x && !Touch_y)) {
+			lock = 0;
 		}
 	}
 }
