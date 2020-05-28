@@ -9,13 +9,15 @@
 
 extern volatile int DMA_complete[];
 extern volatile int Key_value;
+extern volatile int Timer0_time_out;
 
 extern void drawPlayUI(int, int);
 extern void togglePlayIcon(int);
 extern void showVolume(int);
+extern void drawProgressBar(int ,int);
 
 void readyAudio(int);
-int playAudio(int);
+int playAudio(int, int);
 void changeVolume(int);
 int pauseAndPlayAudio(int);
 int changeSong(int, int);
@@ -52,8 +54,6 @@ void Read_WAV_From_Nand(void)
 	address = address + Play_transfer_size * (sound.Play_bit_per_sample/8);
 	dcon.st.TC = Play_transfer_size;
 
-
-
 	Uart_Printf("NAND: %d, 0x%.8X, %d\n", frame, p[frame], dcon.st.TC);
 }
 
@@ -72,6 +72,8 @@ void chooseSongToPlay(void) {
 
 void readyAudio(int i)
 {
+	int duration;
+
 	p[0] = Get_Heap_Base();
 	p[1] = p[0] + 0x100000;
 
@@ -93,6 +95,8 @@ void readyAudio(int i)
 		Uart_Printf("File Size=[%u]\n", sound.Play_file_size);
 		Uart_Printf("Sampling Freq:[%d]Hz\n", sound.Play_sample_freq);
 		Uart_Printf("Bit per Sample:[%d]bit\n", sound.Play_bit_per_sample);
+		duration = sound.Play_file_size / ((sound.Play_bit_per_sample/8) * sound.Play_sample_freq * 2);
+		Uart_Printf("재생시간 : %d\n", duration);
 
 		srcc.udata = 0;
 		srcc.st.INC = DMA_ADDR_INC;
@@ -123,27 +127,40 @@ void readyAudio(int i)
 		Sound_IIS_Start();
 
 		drawPlayUI(i, vol);
-		i = playAudio(i);
+		i = playAudio(i, duration);
 		if (i == -1) break;
 	}
 }
 
 
 
-int playAudio(int idx) {
+int playAudio(int idx, int duration) {
+	float time = 0;
+	float gap = 128.0 / duration;
 	int finish = 0;
 	int paused = 0;
 
 	Key_value = 0;
 	Sound_Control_Soft_Mute(0);
+	Timer0_Delay_ISR_Enable(1, 1000);
 
 	for(;;)
 	{
+		if(Timer0_time_out) {
+			Timer0_time_out = 0;
+			Timer0_Delay_ISR_Enable(1, 1000);
+
+			if (paused || time >= 128) continue;
+			drawProgressBar((int)time, (int)(time+gap));
+			time += gap;
+		}
+
 		if(!lock && Key_value) {
 			lock = 1;
 
 			// player control
 			switch (Key_value) {
+			// 1 볼륨업 2 이전곡 3 볼륨다운 4 다음곡 8 일시정지/재생
 			case 1:
 				changeVolume(1);
 				break;
@@ -180,7 +197,7 @@ int playAudio(int idx) {
 		{
 			Uart_Printf("Stop\n");
 			Sound_Stop_Sound();
-			return -1;
+			return idx == NUM_OF_SONG-1 ? -1 : idx+1;
 		}
 	}
 
@@ -189,7 +206,7 @@ int playAudio(int idx) {
 
 int pauseAndPlayAudio(int paused) {
 	Sound_Play_Pause(!paused);
-	togglePlayIcon(paused);
+	togglePlayIcon(!paused);
 	return !paused;
 }
 

@@ -4,6 +4,7 @@
 #define BLACK	0x0000
 #define WHITE 	0xffff
 #define BLUE	0x003e
+#define YELLOW  0xfe04
 
 #include "./Images/arrow1.h"
 #include "./Images/arrow2.h"
@@ -26,7 +27,7 @@ void drawPlayUI(int idx, int vol) {
 	// ¾Ù¹ü¾ÆÆ®
 	Lcd_Draw_BMP(24, 24, albumArts[idx]);
 	// progress bar
-	Lcd_Draw_Hline(170, 24, 24+128, WHITE);
+	Lcd_Draw_Bar(24, 170, 24+128, 172, WHITE);
 	// play control
 	Lcd_Draw_BMP(24, 185, arrow2);
 	Lcd_Draw_Bar(77, 187, 85, 214, WHITE);
@@ -64,4 +65,8 @@ void togglePlayIcon(int paused) {
 
 void showVolume(int vol) {
 	Lcd_Printf(248, 24, WHITE, BLACK, 1, 1, "%d", vol);
+}
+
+void drawProgressBar(int x1, int x2) {
+	Lcd_Draw_Bar(24+x1, 170, 24+x2, 172, YELLOW);
 }

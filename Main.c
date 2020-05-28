@@ -6,7 +6,6 @@ void User_Main(void);
 
 void Main(void)
 {
-	MMU_Init();
 	Led_Init();
 	Key_Push_ISR_Init();
 	Key_ISR_Init();
@@ -25,7 +24,8 @@ extern void chooseSongToPlay(void);
 extern void showMusicList(void);
 
 void User_Main(void) {
-	showMusicList();
-	chooseSongToPlay();
-
+	for (;;) {
+		showMusicList();
+		chooseSongToPlay();
+	}
 }
