@@ -62,19 +62,6 @@ void Read_WAV_From_Nand(void)
 	Uart_Printf("NAND: %d, 0x%.8X, %d\n", frame, p[frame], dcon.st.TC);
 }
 
-void chooseSongToPlay(void) {
-	int i = NUM_OF_SONG+1;
-
-	do
-	{
-		Uart_Printf("\n원하는 곡의 번호? [0]~[%d]", NUM_OF_SONG-1);
-		i = Uart_GetIntNum();
-		Uart_Printf("\rSONG=%d\n", i);
-	}while((unsigned int)i >= NUM_OF_SONG);
-
-	readyAudio(i);
-}
-
 void readyAudio(int i)
 {
 	int duration;
