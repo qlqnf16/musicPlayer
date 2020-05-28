@@ -33,6 +33,7 @@ void Main(void)
 
 void User_Main(void) {
 	for (;;) {
+		Uart_Printf("back to main");
 		showMusicList();
 		chooseSongToPlay();
 	}
@@ -58,12 +59,11 @@ void chooseSongToPlay(void) {
 			if (Key_value == 8) {
 				if (selectedSongIdx >= NUM_OF_SONG) continue;
 				readyAudio(selectedSongIdx);
+				return;
 			}
 			Key_value = 0;
 		}
 	}
-
-	readyAudio(i);
 }
 
 int generateRandomNumber(int maxNum) {

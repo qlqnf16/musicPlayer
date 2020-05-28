@@ -121,7 +121,7 @@ void readyAudio(int i)
 
 		drawSongUI(i);
 		i = playAudio(i, duration);
-		if (i == -1) break;
+		if (i == -1)return;
 	}
 }
 
