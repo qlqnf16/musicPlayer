@@ -9,6 +9,7 @@ typedef unsigned char SOCKET;
 
 #define BLACK	0x0000
 #define GREY	0x7bde
+#define LGREY	0xbdee
 #define WHITE 	0xffff
 #define BLUE	0x003e
 #define YELLOW  0xfe04

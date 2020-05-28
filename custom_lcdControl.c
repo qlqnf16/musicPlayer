@@ -54,9 +54,9 @@ void showMusicList(void) {
 	int i;
 	Lcd_Clr_Screen(BLACK);
 	for (i = 0; i < 2; i++) {
-		Lcd_Printf(10, 10 + 40 * i, WHITE, BLACK, 1, 1, "%s",
-				songTitles[i]);
-		Lcd_Draw_Hline(40 * (i + 1), 10, 310, WHITE);
+		Lcd_Printf(10, 10 + 55 * i, i ? WHITE : YELLOW, BLACK, 1, 1, "%s", songTitles[i]);
+		Lcd_Printf(10, 30 + 55 * i, LGREY, BLACK, 1, 1, "%s", songArtists[i]);
+		Lcd_Draw_Hline(55 * (i + 1), 10, 310, WHITE);
 	}
 }
 
