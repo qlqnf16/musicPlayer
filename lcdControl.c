@@ -1,4 +1,4 @@
-
+#include <string.h>
 #include "device_driver.h"
 
 #define BLACK	0x0000
@@ -18,72 +18,100 @@
 #include "./Images/albumart1.h"
 #include "./Images/albumart2.h"
 
-const char songTitles[][50] = {"What A Wonderful World", "We Will Rock You"};
-const char songArtists[][50] = {"Louis Armstrong", "Queen"};
-const unsigned short * albumArts[] = {albumart1, albumart2};
+const char songTitles[][50] = { "What A Wonderful World", "We Will Rock You" };
+const char songArtists[][50] = { "Louis Armstrong", "Queen" };
+const unsigned short * albumArts[] = { albumart1, albumart2 };
+const char songLyricses[][300] = {"I see trees \nof green\nRed roses too\nI see them bloom\nFor me and you\nAnd I think to \nmyself...\nWhat a \nwonderful world\nI see skies\nof blue\nAnd clouds \nof white\nThe bright\nblessed day\nThe dark\nsacred night\nAnd I think to\nmyself...\nWhat a\nwonderful world" };
+char * currentLyrics[50];
 
-void drawPlayerUI(int idx, int vol) {
-	Lcd_Set_Shape_Mode(0, 0xFFFe);
-	Lcd_Clr_Screen(BLACK);
+	void drawPlayerUI(int idx, int vol) {
+		Lcd_Set_Shape_Mode(0, 0xFFFe);
+		Lcd_Clr_Screen(BLACK);
 
-	// play control
-	Lcd_Draw_BMP(24, 185, arrow2);
-	Lcd_Draw_Bar(77, 187, 85, 214, WHITE);
-	Lcd_Draw_Bar(91, 187, 99, 214, WHITE);
-	Lcd_Draw_BMP(121, 185, arrow1);
-
-	// volume control
-	Lcd_Draw_BMP(170, 24, volume);
-	Lcd_Draw_Bar(206, 30, 206+18, 36, WHITE);
-	Lcd_Printf(248, 24, WHITE, BLACK, 1, 1, "%d", vol);
-	Lcd_Draw_Bar(278, 30, 278+18, 36, WHITE);
-	Lcd_Draw_Bar(284, 24, 290, 24+18, WHITE);
-	// play list control
-	Lcd_Draw_BMP(170, 60, shuffle);
-	Lcd_Draw_BMP(200, 60, repeat);
-}
-
-void drawSongUI(int idx) {
-	// 앨범아트
-	Lcd_Draw_BMP(24, 24, albumArts[idx]);
-	// progress bar
-	Lcd_Draw_Bar(24, 170, 24+128, 172, GREY);
-	// 가사(추후 추가)
-}
-
-void showMusicList(void) {
-	int i;
-	Lcd_Clr_Screen(BLACK);
-	for (i = 0; i < 2; i++) {
-		Lcd_Printf(10, 10+40*i, WHITE, BLACK, 1, 1, "%s", songTitles[i]);
-		Lcd_Draw_Hline(40*(i+1), 10, 310, WHITE);
-	}
-}
-
-void togglePlayIcon(int paused) {
-	Lcd_Draw_Bar(73, 185, 104, 216, BLACK);
-	if (!paused) {
+		// play control
+		Lcd_Draw_BMP(24, 185, arrow2);
 		Lcd_Draw_Bar(77, 187, 85, 214, WHITE);
 		Lcd_Draw_Bar(91, 187, 99, 214, WHITE);
-		return;
+		Lcd_Draw_BMP(121, 185, arrow1);
+
+		// volume control
+		Lcd_Draw_BMP(170, 24, volume);
+		Lcd_Draw_Bar(206, 30, 206 + 18, 36, WHITE);
+		Lcd_Printf(248, 24, WHITE, BLACK, 1, 1, "%d", vol);
+		Lcd_Draw_Bar(278, 30, 278 + 18, 36, WHITE);
+		Lcd_Draw_Bar(284, 24, 290, 24 + 18, WHITE);
+		// play list control
+		Lcd_Draw_BMP(170, 60, shuffle);
+		Lcd_Draw_BMP(200, 60, repeat);
 	}
-	Lcd_Draw_BMP(73, 185, play);
-}
 
-void showVolume(int vol) {
-	Lcd_Printf(248, 24, WHITE, BLACK, 1, 1, "%d", vol);
-}
+	void initLyrics(int idx) {
+		int i = 0;
+		char *p;
+		p = strtok(songLyricses[idx], "\n");
+		while (p) {
+			currentLyrics[i++] = p;
+			p = strtok(0, "\n");
+		}
+		currentLyrics[i++] = 0;
+	}
 
-void drawProgressBar(int x1, int x2) {
-	Lcd_Draw_Bar(24+x1, 170, 24+x2, 172, YELLOW);
-}
+	void drawLyrics(int idx) {
+		int i;
+		for (i = 0; i < 7; i++) {
+			Lcd_Printf(170, 90 + (i * 20), WHITE, BLACK, 1, 1, "%s", currentLyrics[i]);
+		}
+	}
 
-void toggleShuffleIcon(int active) {
-	if (active) Lcd_Draw_BMP(170, 60, shuffleActive);
-	else Lcd_Draw_BMP(170, 60, shuffle);
-}
+	void drawSongUI(int idx) {
+		// 앨범아트
+		Lcd_Draw_BMP(24, 24, albumArts[idx]);
+		// progress bar
+		Lcd_Draw_Bar(24, 170, 24 + 128, 172, GREY);
+		// 가사(추후 추가)
+		initLyrics(idx);
+		drawLyrics(idx);
+	}
 
-void toggleRepeatIcon(int active) {
-	if (active) Lcd_Draw_BMP(200, 60, repeatActive);
-	else Lcd_Draw_BMP(200, 60, repeat);
-}
+	void showMusicList(void) {
+		int i;
+		Lcd_Clr_Screen(BLACK);
+		for (i = 0; i < 2; i++) {
+			Lcd_Printf(10, 10 + 40 * i, WHITE, BLACK, 1, 1, "%s",
+					songTitles[i]);
+			Lcd_Draw_Hline(40 * (i + 1), 10, 310, WHITE);
+		}
+	}
+
+	void togglePlayIcon(int paused) {
+		Lcd_Draw_Bar(73, 185, 104, 216, BLACK);
+		if (!paused) {
+			Lcd_Draw_Bar(77, 187, 85, 214, WHITE);
+			Lcd_Draw_Bar(91, 187, 99, 214, WHITE);
+			return;
+		}
+		Lcd_Draw_BMP(73, 185, play);
+	}
+
+	void showVolume(int vol) {
+		Lcd_Printf(248, 24, WHITE, BLACK, 1, 1, "%d", vol);
+	}
+
+	void drawProgressBar(int x1, int x2) {
+		Lcd_Draw_Bar(24 + x1, 170, 24 + x2, 172, YELLOW);
+	}
+
+	void toggleShuffleIcon(int active) {
+		if (active)
+			Lcd_Draw_BMP(170, 60, shuffleActive);
+		else
+			Lcd_Draw_BMP(170, 60, shuffle);
+	}
+
+	void toggleRepeatIcon(int active) {
+		if (active)
+			Lcd_Draw_BMP(200, 60, repeatActive);
+		else
+			Lcd_Draw_BMP(200, 60, repeat);
+	}
+
