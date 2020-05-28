@@ -2,6 +2,7 @@
 #include "device_driver.h"
 
 #define BLACK	0x0000
+#define GREY	0x7bde
 #define WHITE 	0xffff
 #define BLUE	0x003e
 #define YELLOW  0xfe04
@@ -27,7 +28,7 @@ void drawPlayUI(int idx, int vol) {
 	// ¾Ù¹ü¾ÆÆ®
 	Lcd_Draw_BMP(24, 24, albumArts[idx]);
 	// progress bar
-	Lcd_Draw_Bar(24, 170, 24+128, 172, WHITE);
+	Lcd_Draw_Bar(24, 170, 24+128, 172, GREY);
 	// play control
 	Lcd_Draw_BMP(24, 185, arrow2);
 	Lcd_Draw_Bar(77, 187, 85, 214, WHITE);
@@ -47,6 +48,7 @@ void drawPlayUI(int idx, int vol) {
 
 void showMusicList(void) {
 	int i;
+	Lcd_Clr_Screen(BLACK);
 	for (i = 0; i < 2; i++) {
 		Lcd_Printf(10, 10+40*i, WHITE, BLACK, 1, 1, "%s", songTitles[i]);
 		Lcd_Draw_Hline(40*(i+1), 10, 310, WHITE);
