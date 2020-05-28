@@ -1,11 +1,6 @@
 #include <string.h>
 #include "device_driver.h"
 
-#define BLACK	0x0000
-#define GREY	0x7bde
-#define WHITE 	0xffff
-#define BLUE	0x003e
-#define YELLOW  0xfe04
 
 #include "./Images/arrow1.h"
 #include "./Images/arrow2.h"
@@ -18,11 +13,11 @@
 #include "./Images/albumart1.h"
 #include "./Images/albumart2.h"
 
+extern void initLyrics(int idx);
+
 const char songTitles[][50] = { "What A Wonderful World", "We Will Rock You" };
 const char songArtists[][50] = { "Louis Armstrong", "Queen" };
 const unsigned short * albumArts[] = { albumart1, albumart2 };
-const char songLyricses[][300] = {"I see trees \nof green\nRed roses too\nI see them bloom\nFor me and you\nAnd I think to \nmyself...\nWhat a \nwonderful world\nI see skies\nof blue\nAnd clouds \nof white\nThe bright\nblessed day\nThe dark\nsacred night\nAnd I think to\nmyself...\nWhat a\nwonderful world" };
-char * currentLyrics[50];
 
 	void drawPlayerUI(int idx, int vol) {
 		Lcd_Set_Shape_Mode(0, 0xFFFe);
@@ -45,32 +40,13 @@ char * currentLyrics[50];
 		Lcd_Draw_BMP(200, 60, repeat);
 	}
 
-	void initLyrics(int idx) {
-		int i = 0;
-		char *p;
-		p = strtok(songLyricses[idx], "\n");
-		while (p) {
-			currentLyrics[i++] = p;
-			p = strtok(0, "\n");
-		}
-		currentLyrics[i++] = 0;
-	}
-
-	void drawLyrics(int idx) {
-		int i;
-		for (i = 0; i < 7; i++) {
-			Lcd_Printf(170, 90 + (i * 20), WHITE, BLACK, 1, 1, "%s", currentLyrics[i]);
-		}
-	}
-
 	void drawSongUI(int idx) {
 		// 앨범아트
 		Lcd_Draw_BMP(24, 24, albumArts[idx]);
 		// progress bar
 		Lcd_Draw_Bar(24, 170, 24 + 128, 172, GREY);
-		// 가사(추후 추가)
+		// 가사
 		initLyrics(idx);
-		drawLyrics(idx);
 	}
 
 	void showMusicList(void) {

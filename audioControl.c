@@ -19,6 +19,7 @@ extern void showVolume(int);
 extern void drawProgressBar(int ,int);
 extern void toggleShuffleIcon(int);
 extern void toggleRepeatIcon(int);
+extern void checkLyrics(int, int);
 
 void readyAudio(int);
 int playAudio(int, int);
@@ -140,10 +141,11 @@ void readyAudio(int i)
 
 
 int playAudio(int idx, int duration) {
-	float time = 0;
+	float barStart = 0;
 	float gap = 128.0 / duration;
 	int finish = 0;
 	int paused = 0;
+	int sec = 1;
 
 	Key_value = 0;
 	Sound_Control_Soft_Mute(0);
@@ -155,9 +157,11 @@ int playAudio(int idx, int duration) {
 			Timer0_time_out = 0;
 			Timer0_Delay_ISR_Enable(1, 1000);
 
-			if (paused || time >= 128) continue;
-			drawProgressBar((int)time, (int)(time+gap));
-			time += gap;
+			Uart_Printf("%d ", sec);
+			checkLyrics(idx, sec++);
+			if (paused || barStart >= 128) continue;
+			drawProgressBar((int)barStart, (int)(barStart+gap));
+			barStart += gap;
 		}
 
 		if(!lock && Key_value) {
