@@ -184,7 +184,7 @@ extern void DMA_Uart2_Ch3_Select(int dma, int rx_tx);
 
 // RTC.c
 extern void RTC_Set_Time(RTC_TIME *time);
-extern void RTC_Get_Time(RTC_TIME *time);
+extern int RTC_Get_Time(void);
 extern void RTC_Set_Alarm(RTC_TIME *time);
 extern void RTC_Get_Alarm(RTC_TIME *time);
 extern void RTC_Set_Alarm_Enable(int en, RTC_TIME *time);

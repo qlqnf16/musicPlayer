@@ -11,10 +11,14 @@ extern volatile int DMA_complete[];
 extern volatile int Key_value;
 extern volatile int Timer0_time_out;
 
-extern void drawPlayUI(int, int);
+extern int generateRandomNumber(int);
+extern void drawPlayerUI(int, int);
+extern void drawSongUI(int idx);
 extern void togglePlayIcon(int);
 extern void showVolume(int);
 extern void drawProgressBar(int ,int);
+extern void toggleShuffleIcon(int);
+extern void toggleRepeatIcon(int);
 
 void readyAudio(int);
 int playAudio(int, int);
@@ -28,7 +32,7 @@ unsigned int Play_transfer_size;
 unsigned char * p[2];
 
 int vol = 5;
-int lock = 0;
+int lock, shuffleOn, repeatOn;
 
 UNI_SRCC srcc;
 UNI_DSTC dstc;
@@ -78,6 +82,7 @@ void readyAudio(int i)
 	p[1] = p[0] + 0x100000;
 
 	block = Nand_Page_2_Addr(100, 0, 0);
+	drawPlayerUI(i, vol);
 
 	for (;;) {
 		Sound_Control_Soft_Mute(0);
@@ -120,13 +125,13 @@ void readyAudio(int i)
 
 		Read_WAV_From_Nand();
 
-		Uart_Printf("VOL = %d\n", vol);
+		Uart_Printf("VOL = %d shuffle %s repeat %s\n", vol, shuffleOn ? "on" : "off", repeatOn ? "on" : "off");
 		Sound_Control_Headphone_Volume(vol);
 		Sound_Set_Sampling_Rate(sound.Play_sample_freq);
 		Sound_Set_Mode(IIS_TX_ONLY, sound.Play_bit_per_sample);
 		Sound_IIS_Start();
 
-		drawPlayUI(i, vol);
+		drawSongUI(i);
 		i = playAudio(i, duration);
 		if (i == -1) break;
 	}
@@ -171,6 +176,14 @@ int playAudio(int idx, int duration) {
 				break;
 			case 4:
 				return changeSong(idx, 1);
+			case 5:
+				shuffleOn = !shuffleOn;
+				toggleShuffleIcon(shuffleOn);
+				break;
+			case 6:
+				repeatOn = !repeatOn;
+				toggleRepeatIcon(repeatOn);
+				break;
 			case 8:
 				paused = pauseAndPlayAudio(paused);
 				break;
@@ -197,7 +210,11 @@ int playAudio(int idx, int duration) {
 		{
 			Uart_Printf("Stop\n");
 			Sound_Stop_Sound();
-			return idx == NUM_OF_SONG-1 ? -1 : idx+1;
+			if (idx == NUM_OF_SONG-1) {
+				if (repeatOn) return 0;
+				return -1;
+			}
+			return idx+1;
 		}
 	}
 
@@ -218,12 +235,25 @@ void changeVolume(int up) {
 }
 
 int changeSong(int cur, int next) {
+	if (shuffleOn) {
+		int new = generateRandomNumber(NUM_OF_SONG-1);
+		while (new == cur) new = generateRandomNumber(NUM_OF_SONG-1);
+		return new;
+	}
 	if (next) {
-		if (cur == NUM_OF_SONG-1) return -1;
+		if (cur == NUM_OF_SONG-1) {
+			if (repeatOn) return 0;
+			Sound_Stop_Sound();
+			return -1;
+		}
 		return cur+1;
 	}
 	else {
-		if (cur == 0) return -1;
+		if (cur == 0) {
+			if (repeatOn) return NUM_OF_SONG-1;
+			Sound_Stop_Sound();
+			return -1;
+		}
 		return cur-1;
 	}
 }

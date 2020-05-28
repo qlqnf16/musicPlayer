@@ -17,36 +17,46 @@ void RTC_Set_Time(RTC_TIME *time)
 	Macro_Clear_Bit(rRTCCON, 0);
 }
 
-void RTC_Get_Time(RTC_TIME *time)
-{
+int RTC_Get_Time(void) {
 	RTC_TIME a;
-
-	a.day = (int)rBCDDAY;
-	a.year = (int)rBCDYEAR;
-	a.mon = (int)rBCDMON;
-	a.date = (int)rBCDDATE;
 	a.hour = (int)rBCDHOUR;
 	a.min = (int)rBCDMIN;
 	a.sec = (int)rBCDSEC;
-
-	if(!a.sec)
-	{
-		a.day = (int)rBCDDAY;
-		a.year = (int)rBCDYEAR;
-		a.mon = (int)rBCDMON;
-		a.date = (int)rBCDDATE;
-		a.hour = (int)rBCDHOUR;
-		a.min = (int)rBCDMIN;
-	}
-
-	time->day = a.day;
-	time->year = ((a.year >> 4) & 0xf) * 10 + (a.year & 0xf);
-	time->mon = ((a.mon >> 4) & 0xf) * 10 + (a.mon & 0xf);
-	time->date = ((a.date >> 4) & 0xf) * 10 + (a.date & 0xf);
-	time->hour = ((a.hour >> 4) & 0xf) * 10 + (a.hour & 0xf);
-	time->min = ((a.min >> 4) & 0xf) * 10 + (a.min & 0xf);
-	time->sec = ((a.sec >> 4) & 0xf) * 10 + (a.sec & 0xf);
+	return  ((a.hour >> 4) & 0xf) * 10 + (a.hour & 0xf) * 360 + \
+			((a.min >> 4) & 0xf) * 10 + (a.min & 0xf) * 60 + \
+			((a.sec >> 4) & 0xf) * 10 + (a.sec & 0xf);
 }
+
+//void RTC_Get_Time(RTC_TIME *time)
+//{
+//	RTC_TIME a;
+//
+//	a.day = (int)rBCDDAY;
+//	a.year = (int)rBCDYEAR;
+//	a.mon = (int)rBCDMON;
+//	a.date = (int)rBCDDATE;
+//	a.hour = (int)rBCDHOUR;
+//	a.min = (int)rBCDMIN;
+//	a.sec = (int)rBCDSEC;
+//
+//	if(!a.sec)
+//	{
+//		a.day = (int)rBCDDAY;
+//		a.year = (int)rBCDYEAR;
+//		a.mon = (int)rBCDMON;
+//		a.date = (int)rBCDDATE;
+//		a.hour = (int)rBCDHOUR;
+//		a.min = (int)rBCDMIN;
+//	}
+//
+//	time->day = a.day;
+//	time->year = ((a.year >> 4) & 0xf) * 10 + (a.year & 0xf);
+//	time->mon = ((a.mon >> 4) & 0xf) * 10 + (a.mon & 0xf);
+//	time->date = ((a.date >> 4) & 0xf) * 10 + (a.date & 0xf);
+//	time->hour = ((a.hour >> 4) & 0xf) * 10 + (a.hour & 0xf);
+//	time->min = ((a.min >> 4) & 0xf) * 10 + (a.min & 0xf);
+//	time->sec = ((a.sec >> 4) & 0xf) * 10 + (a.sec & 0xf);
+//}
 
 void RTC_Set_Alarm_Enable(int en, RTC_TIME *time)
 {

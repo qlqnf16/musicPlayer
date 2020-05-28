@@ -22,13 +22,10 @@ const char songTitles[][50] = {"What A Wonderful World", "We Will Rock You"};
 const char songArtists[][50] = {"Louis Armstrong", "Queen"};
 const unsigned short * albumArts[] = {albumart1, albumart2};
 
-void drawPlayUI(int idx, int vol) {
+void drawPlayerUI(int idx, int vol) {
 	Lcd_Set_Shape_Mode(0, 0xFFFe);
 	Lcd_Clr_Screen(BLACK);
-	// 앨범아트
-	Lcd_Draw_BMP(24, 24, albumArts[idx]);
-	// progress bar
-	Lcd_Draw_Bar(24, 170, 24+128, 172, GREY);
+
 	// play control
 	Lcd_Draw_BMP(24, 185, arrow2);
 	Lcd_Draw_Bar(77, 187, 85, 214, WHITE);
@@ -43,7 +40,15 @@ void drawPlayUI(int idx, int vol) {
 	Lcd_Draw_Bar(284, 24, 290, 24+18, WHITE);
 	// play list control
 	Lcd_Draw_BMP(170, 60, shuffle);
-	Lcd_Draw_BMP(270, 60, repeat);
+	Lcd_Draw_BMP(200, 60, repeat);
+}
+
+void drawSongUI(int idx) {
+	// 앨범아트
+	Lcd_Draw_BMP(24, 24, albumArts[idx]);
+	// progress bar
+	Lcd_Draw_Bar(24, 170, 24+128, 172, GREY);
+	// 가사(추후 추가)
 }
 
 void showMusicList(void) {
@@ -71,4 +76,14 @@ void showVolume(int vol) {
 
 void drawProgressBar(int x1, int x2) {
 	Lcd_Draw_Bar(24+x1, 170, 24+x2, 172, YELLOW);
+}
+
+void toggleShuffleIcon(int active) {
+	if (active) Lcd_Draw_BMP(170, 60, shuffleActive);
+	else Lcd_Draw_BMP(170, 60, shuffle);
+}
+
+void toggleRepeatIcon(int active) {
+	if (active) Lcd_Draw_BMP(200, 60, repeatActive);
+	else Lcd_Draw_BMP(200, 60, repeat);
 }

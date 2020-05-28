@@ -2,6 +2,8 @@
 #include "device_driver.h"
 #include "macro.h"
 
+#include <stdlib.h>
+
 void User_Main(void);
 
 void Main(void)
@@ -18,6 +20,7 @@ void Main(void)
 	Uart_Printf("Welcome GBOX World!\n");
 	User_Main();
 	Uart_Printf("Good Bye~\n");
+	srand((unsigned int)RTC_Get_Time());
 }
 
 extern void chooseSongToPlay(void);
@@ -28,4 +31,8 @@ void User_Main(void) {
 		showMusicList();
 		chooseSongToPlay();
 	}
+}
+
+int generateRandomNumber(int maxNum) {
+	return rand() % (maxNum + 1);
 }
