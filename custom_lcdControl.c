@@ -43,7 +43,7 @@ void drawPlayerUI(int idx, int vol) {
 	Lcd_Draw_Bar(284, 24, 290, 24 + 18, WHITE);
 	// play list control
 	Lcd_Draw_BMP(170, 60, shuffle);
-	Lcd_Draw_BMP(200, 60, repeat);
+	Lcd_Draw_BMP(210, 60, repeat);
 }
 
 void drawSongUI(int idx) {
@@ -117,7 +117,7 @@ void toggleShuffleIcon(int active) {
 
 void toggleRepeatIcon(int active) {
 	if (active)
-		Lcd_Draw_BMP(200, 60, repeatActive);
+		Lcd_Draw_BMP(210, 60, repeatActive);
 	else
-		Lcd_Draw_BMP(200, 60, repeat);
+		Lcd_Draw_BMP(210, 60, repeat);
 }

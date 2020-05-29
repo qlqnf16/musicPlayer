@@ -7,8 +7,17 @@
 #define DMA_TC_SIZE		(0xfffff/(sound.Play_bit_per_sample/8))
 #define NUM_OF_SONG 2
 
+#define PAUSECLICKED(X, Y)			(X >= 77 && X <= 99 && Y >= 187)
+#define PREVCLICKED(X, Y)			(X <= 55 && Y >= 187)
+#define NEXTCLICKED(X, Y)			(X >= 110 && X <= 155 && Y >= 187)
+#define VOLUMEDOWNCLICKED(X, Y)		(X >= 200 && X <= 230 && Y <= 50)
+#define VOLUMEUPCLICKED(X, Y)		(X >= 270 && X <= 310 && Y <= 50)
+#define SHUFFLECLICKED(X, Y)		(X >= 165 && X <= 190 && Y >= 60 && Y <= 90)
+#define REPEATCLICKED(X, Y)			(X >= 205 && X <= 230 && Y >= 60 && Y <= 90)
+#define BACKCLICKED(X, Y)			(X <= 30 && Y <= 30)
+
 extern volatile int DMA_complete[];
-extern volatile int Key_value;
+extern volatile int Touch_x, Touch_y;
 extern volatile int Timer0_time_out;
 
 extern int generateRandomNumber(int);
@@ -134,7 +143,7 @@ int playAudio(int idx, int duration) {
 	int paused = 0;
 	int sec = 1;
 
-	Key_value = 0;
+	Touch_x = Touch_y = 0;
 	Sound_Control_Soft_Mute(0);
 	Timer0_Delay_ISR_Enable(1, 1000);
 
@@ -150,44 +159,41 @@ int playAudio(int idx, int duration) {
 			barStart += gap;
 		}
 
-		if(!lock && Key_value) {
+		if(!lock && (Touch_x || Touch_y)) {
 			lock = 1;
 
-			// player control
-			switch (Key_value) {
-			// 1 볼륨업 2 이전곡 3 볼륨다운 4 다음곡 5 셔플 온/오프 6 반복재생 온/오프 7 목록으로 돌아가기 8 일시정지/재생
-			case 1:
-				changeVolume(1);
-				break;
-			case 2:
-				return changeSong(idx, 0);
-			case 3:
-				changeVolume(0);
-				break;
-			case 4:
+			if (PAUSECLICKED(Touch_x, Touch_y)) {
+				paused = pauseAndPlayAudio(paused);
+			}
+			else if (NEXTCLICKED(Touch_x, Touch_y)) {
 				return changeSong(idx, 1);
-			case 5:
+			}
+			else if (PREVCLICKED(Touch_x, Touch_y)) {
+				return changeSong(idx, 0);
+			}
+			else if (VOLUMEUPCLICKED(Touch_x, Touch_y)) {
+				changeVolume(1);
+			}
+			else if (VOLUMEDOWNCLICKED(Touch_x, Touch_y)) {
+				changeVolume(0);
+			}
+			else if (SHUFFLECLICKED(Touch_x, Touch_y)) {
 				shuffleOn = !shuffleOn;
 				toggleShuffleIcon(shuffleOn);
-				break;
-			case 6:
+			}
+			else if (REPEATCLICKED(Touch_x, Touch_y)) {
 				repeatOn = !repeatOn;
 				toggleRepeatIcon(repeatOn);
-				break;
-			case 7:
+			}
+			else if (BACKCLICKED(Touch_x, Touch_y)) {
 				Sound_Stop_Sound();
 				return -1;
-			case 8:
-				paused = pauseAndPlayAudio(paused);
-				break;
-			default:
-				break;
 			}
 
-			Key_value = 0;
+			Touch_x = Touch_y = 0;
 		}
 
-		if (lock && !Key_value) lock = 0;
+		if (lock && !Touch_x && !Touch_y) lock = 0;
 
 		if(DMA_complete[2] && !finish)
 		{
