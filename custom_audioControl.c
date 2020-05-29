@@ -5,7 +5,7 @@
 #include "macro.h"
 
 #define DMA_TC_SIZE		(0xfffff/(sound.Play_bit_per_sample/8))
-#define NUM_OF_SONG 3
+#define NUM_OF_SONG 6
 
 #define PAUSECLICKED(X, Y)			(X >= 77 && X <= 99 && Y >= 187)
 #define PREVCLICKED(X, Y)			(X <= 55 && Y >= 187)
@@ -41,7 +41,7 @@ unsigned int offset, size, frame;
 unsigned int Play_transfer_size;
 unsigned char * p[2];
 
-const int startBlockNums[] = {100, 100, 280};
+const int startBlockNums[] = {100, 100, 280, 460, 640, 790};
 int vol = 5;
 int lock, shuffleOn, repeatOn;
 

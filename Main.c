@@ -2,7 +2,7 @@
 #include "device_driver.h"
 #include "macro.h"
 
-#define NUM_OF_SONG 3
+#define NUM_OF_SONG 6
 
 #include <stdlib.h>
 
@@ -42,14 +42,14 @@ void User_Main(void) {
 
 void chooseSongToPlay(void) {
 	int currentTop = 0;
-	int i, lock = 0;
+	int i, j, lock = 0;
 	Touch_x = Touch_y = 0;
 
 	for (;;) {
 		if (!lock && (Touch_x || Touch_y)) {
-			for (i = currentTop; i < currentTop+4; i++) {
+			for (i = currentTop, j = 0; i < currentTop+4; i++, j++) {
 				if (i >= NUM_OF_SONG) continue;
-				if (Touch_x > 275 || (Touch_y > 55 * (i+1) || Touch_y < 55 * i)) continue;
+				if (Touch_x > 275 || (Touch_y > 55 * (j+1) || Touch_y < 55 * j)) continue;
 				Touch_x = Touch_y = 0;
 				if (i <= 1) readyAudio(i, i);
 				else readyAudio(0, i);
@@ -68,6 +68,7 @@ void chooseSongToPlay(void) {
 					currentTop++;
 				}
 			}
+			Uart_Printf("currentTOP: %d", currentTop);
 
 			Touch_x = Touch_y = 0;
 			lock = 1;
