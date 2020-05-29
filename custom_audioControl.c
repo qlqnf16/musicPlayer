@@ -5,7 +5,7 @@
 #include "macro.h"
 
 #define DMA_TC_SIZE		(0xfffff/(sound.Play_bit_per_sample/8))
-#define NUM_OF_SONG 2
+#define NUM_OF_SONG 3
 
 #define PAUSECLICKED(X, Y)			(X >= 77 && X <= 99 && Y >= 187)
 #define PREVCLICKED(X, Y)			(X <= 55 && Y >= 187)
@@ -30,7 +30,7 @@ extern void toggleShuffleIcon(int);
 extern void toggleRepeatIcon(int);
 extern void checkLyrics(int, int);
 
-void readyAudio(int);
+void readyAudio(int, int);
 int playAudio(int, int);
 void changeVolume(int);
 int pauseAndPlayAudio(int);
@@ -41,6 +41,7 @@ unsigned int offset, size, frame;
 unsigned int Play_transfer_size;
 unsigned char * p[2];
 
+const int startBlockNums[] = {100, 100, 280};
 int vol = 5;
 int lock, shuffleOn, repeatOn;
 
@@ -71,23 +72,23 @@ void Read_WAV_From_Nand(void)
 	Uart_Printf("NAND: %d, 0x%.8X, %d\n", frame, p[frame], dcon.st.TC);
 }
 
-void readyAudio(int i)
+void readyAudio(int blockId, int songId)
 {
 	int duration;
 
 	p[0] = Get_Heap_Base();
 	p[1] = p[0] + 0x100000;
 
-	block = Nand_Page_2_Addr(100, 0, 0);
-	drawPlayerUI(i, vol);
+	drawPlayerUI(songId, vol);
 
 	for (;;) {
+		block = Nand_Page_2_Addr(startBlockNums[songId], 0, 0);
 		Sound_Control_Soft_Mute(0);
 		frame = 0;
 		DMA_complete[2] = 1;
 
-		Nand_Read(block+i*8, (U8 *)&offset, 4);
-		Nand_Read(block+i*8+4, (U8 *)&size, 4);
+		Nand_Read(block+blockId*8, (U8 *)&offset, 4);
+		Nand_Read(block+blockId*8+4, (U8 *)&size, 4);
 		Nand_Read(block+offset, (U8 *)p[0], 44);
 		address = block + offset + 44;
 
@@ -128,9 +129,14 @@ void readyAudio(int i)
 		Sound_Set_Mode(IIS_TX_ONLY, sound.Play_bit_per_sample);
 		Sound_IIS_Start();
 
-		drawSongUI(i);
-		i = playAudio(i, duration);
-		if (i == -1)return;
+		drawSongUI(songId);
+		songId = playAudio(songId, duration);
+		if (songId == -1)return;
+		if (songId <= 1) {
+			blockId = songId;
+		} else {
+			blockId = 0;
+		}
 	}
 }
 

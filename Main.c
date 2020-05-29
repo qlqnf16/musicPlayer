@@ -2,13 +2,13 @@
 #include "device_driver.h"
 #include "macro.h"
 
-#define NUM_OF_SONG 2
+#define NUM_OF_SONG 3
 
 #include <stdlib.h>
 
 extern void showMusicList(void);
 extern void moveMusicList(int);
-extern void readyAudio(int);
+extern void readyAudio(int, int);
 void chooseSongToPlay(void);
 void User_Main(void);
 
@@ -51,7 +51,8 @@ void chooseSongToPlay(void) {
 				if (i >= NUM_OF_SONG) continue;
 				if (Touch_x > 275 || (Touch_y > 55 * (i+1) || Touch_y < 55 * i)) continue;
 				Touch_x = Touch_y = 0;
-				readyAudio(i);
+				if (i <= 1) readyAudio(i, i);
+				else readyAudio(0, i);
 				return;
 			}
 

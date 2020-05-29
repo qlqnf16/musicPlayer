@@ -14,13 +14,14 @@
 #include "./Images/scrollDown.h"
 #include "./Images/albumart1.h"
 #include "./Images/albumart2.h"
+#include "./Images/albumart3.h"
 
 extern void initLyrics(int);
 void drawMusicCard(int, int);
 
-const char songTitles[][50] = { "What A Wonderful World", "We Will Rock You",  "Mountains", "Sweet but Psycho", "for him.", "Keep You Mine"};
-const char songArtists[][50] = { "Louis Armstrong", "Queen", "LSD", "Ava Max", "Troye Sivan", "NOTD"};
-const unsigned short * albumArts[] = { albumart1, albumart2 };
+const char songTitles[][50] = { "What A Wonderful World", "We Will Rock You",  "If I Die Tomorrow", "Sweet but Psycho", "for him.", "Keep You Mine"};
+const char songArtists[][50] = { "Louis Armstrong", "Queen", "Beenzino", "Ava Max", "Troye Sivan", "NOTD"};
+const unsigned short * albumArts[] = { albumart1, albumart2, albumart3 };
 
 int listTop, listBottom;
 
